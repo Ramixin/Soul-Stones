@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "soulstones",
+  "version": "${version}",
+  "name": "SoulStones",
+  "description": "A mod that gives flowers a more useful mechanic: farming",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/soulstones/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "net.ramixin.soulstones.client.SoulStonesClient"
+    ],
+    "main": [
+      "net.ramixin.soulstones.SoulStones"
+    ]
+  },
+  "mixins": [
+    "soulstones.mixins.json",
+    {
+      "config": "soulstones.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
