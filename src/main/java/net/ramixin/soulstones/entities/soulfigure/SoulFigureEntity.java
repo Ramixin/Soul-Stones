@@ -1,5 +1,7 @@
 package net.ramixin.soulstones.entities.soulfigure;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -9,6 +11,9 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
@@ -31,14 +36,22 @@ public class SoulFigureEntity extends LivingEntity {
         super(entityType, world);
     }
 
-    public SoulFigureEntity(World world) {
+    public SoulFigureEntity(World world, PlayerEntity player) {
         this(ModEntityTypes.SOUL_FIGURE, world);
+        position(player);
     }
 
     public void assignToPlayer(@NotNull PlayerEntity player) {
         dataTracker.set(PLAYER_UUID, Optional.of(player.getUuid()));
 
         dataTracker.set(TEXTURE, player.getGameProfile().getProperties().get("textures").iterator().next().value());
+    }
+
+    public void position(PlayerEntity player) {
+//        this.prevHeadYaw = player.getYaw();
+//        this.headYaw = player.getYaw();
+        this.prevPitch = player.getPitch();
+        this.setPitch(player.getPitch()+180);
     }
 
     @Override
@@ -61,8 +74,26 @@ public class SoulFigureEntity extends LivingEntity {
     @Override
     public boolean saveNbt(NbtCompound nbt) {
         this.dataTracker.get(PLAYER_UUID).ifPresent(uuid -> nbt.putUuid("playerUUID", uuid));
-        nbt.putString("texture", this.dataTracker.get(TEXTURE));
+        getTexture().ifPresent(texture -> nbt.putString("texture", texture));
         return super.saveNbt(nbt);
+    }
+
+    @Override
+    public boolean handleAttack(Entity attacker) {
+        for(int i = 0; i < 10; ++i) {
+            double d = this.random.nextGaussian() * 0.1;
+            double e = this.random.nextGaussian() * 0.1;
+            double f = this.random.nextGaussian() * 0.1;
+            this.getWorld().addParticle(ParticleTypes.SOUL, this.getParticleX(1.0F) - d, this.getRandomBodyY() - e, this.getParticleZ(1.0F) - f, -d, -e, -f);
+        }
+        for(int i = 0; i < 32; i++) {
+            double x = getParticleX(this.getWidth() * 2);
+            double y = getRandomBodyY();
+            double z = getParticleZ(this.getWidth() * 2);
+            this.getWorld().addParticle(new BlockStateParticleEffect(ParticleTypes.BLOCK_CRUMBLE, Blocks.STONE.getDefaultState()), x, y, z, 0.0D, 0.0D, 0.0D);
+        }
+        this.discard();
+        return true;
     }
 
     @Override
@@ -112,8 +143,13 @@ public class SoulFigureEntity extends LivingEntity {
     }
 
     @Override
-    public Arm getMainArm() {
-        return Arm.RIGHT;
+    public boolean canBeNameTagged() {
+        return false;
+    }
+
+    @Override
+    protected Text getDefaultName() {
+        return Text.empty();
     }
 
     @Override
@@ -122,7 +158,7 @@ public class SoulFigureEntity extends LivingEntity {
     }
 
     @Override
-    public boolean isCustomNameVisible() {
-        return false;
+    public Arm getMainArm() {
+        return Arm.RIGHT;
     }
 }

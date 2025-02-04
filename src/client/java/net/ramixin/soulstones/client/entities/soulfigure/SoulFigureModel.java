@@ -2,11 +2,13 @@ package net.ramixin.soulstones.client.entities.soulfigure;
 
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.client.render.entity.model.EntityModel;
+import net.ramixin.soulstones.client.ModShaderPrograms;
 
-public class SoulFigureModel extends BipedEntityModel<SoulFigureEntityRenderState> {
+public class SoulFigureModel extends EntityModel<SoulFigureEntityRenderState> {
 
     public SoulFigureModel(ModelPart root) {
-        super(root);
+        super(root, ModShaderPrograms::getSoulFigure);
     }
 
 

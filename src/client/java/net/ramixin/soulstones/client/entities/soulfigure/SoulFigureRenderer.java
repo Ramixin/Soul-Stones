@@ -8,7 +8,9 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.ramixin.soulstones.client.entities.ModEntityRenderLayers;
 import net.ramixin.soulstones.entities.soulfigure.SoulFigureEntity;
 
 import java.util.UUID;
@@ -18,7 +20,8 @@ public class SoulFigureRenderer extends LivingEntityRenderer<SoulFigureEntity, S
     private final SoulFigureModel defaultModel;
     private final SoulFigureModel slimModel;
 
-    private static final Identifier MISSINGNO = Identifier.of("minecraft:textures/missingno.png");
+    private static final Identifier MISSINGNO = Identifier.of("soulstones:textures/entity/soul_figure_empty.png");
+    private static final Identifier EMPTY = Identifier.of("soulstones:textures/entity/soul_figure_empty.png");
 
     public SoulFigureRenderer(EntityRendererFactory.Context ctx) {
         super(ctx, new SoulFigureModel(ctx.getPart(ModEntityRenderLayers.DEFAULT_ENTITY_MODEL_LAYER)), 0.5F);
@@ -28,7 +31,7 @@ public class SoulFigureRenderer extends LivingEntityRenderer<SoulFigureEntity, S
 
     @Override
     public Identifier getTexture(SoulFigureEntityRenderState state) {
-        if(state.uuid.isEmpty()) return MISSINGNO;
+        if(state.uuid.isEmpty()) return EMPTY;
         if(state.texture.isEmpty()) return MISSINGNO;
 
         GameProfile profile = new GameProfile(state.uuid.get(), "");
@@ -57,5 +60,17 @@ public class SoulFigureRenderer extends LivingEntityRenderer<SoulFigureEntity, S
         state.uuid = entity.getPlayerUUID();
         state.texture = entity.getTexture();
         super.updateRenderState(entity, state, f);
+        state.limbFrequency = 0;
+        state.limbAmplitudeMultiplier = 0;
+    }
+
+    @Override
+    protected int getMixColor(SoulFigureEntityRenderState state) {
+        return 0xFF_00_00_00;
+    }
+
+    @Override
+    protected void renderLabelIfPresent(SoulFigureEntityRenderState state, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+
     }
 }

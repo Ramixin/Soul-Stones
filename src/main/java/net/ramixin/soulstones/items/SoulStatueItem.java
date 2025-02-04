@@ -19,9 +19,8 @@ public class SoulStatueItem extends Item {
         World world = context.getWorld();
         if(context.getPlayer() == null) return ActionResult.PASS;
         if(!(world instanceof ServerWorld serverWorld)) return ActionResult.PASS;
-        SoulFigureEntity figure = new SoulFigureEntity(world);
+        SoulFigureEntity figure = new SoulFigureEntity(world, context.getPlayer());
         figure.setPos(context.getHitPos().getX(), context.getHitPos().getY(), context.getHitPos().getZ());
-        figure.assignToPlayer(context.getPlayer());
         serverWorld.spawnEntity(figure);
         return super.useOnBlock(context);
     }

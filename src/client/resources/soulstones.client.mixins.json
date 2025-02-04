@@ -4,6 +4,7 @@
   "package": "net.ramixin.soulstones.client.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ShaderProgramKeysMixin"
   ],
   "injectors": {
     "defaultRequire": 1
