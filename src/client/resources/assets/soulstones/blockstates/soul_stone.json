@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "soulstones:block/soul_stone"
+      }
+    ]
+  }
+}

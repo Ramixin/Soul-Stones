@@ -4,6 +4,8 @@
   "package": "net.ramixin.soulstones.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "LevelPropertiesMixin",
+    "ServerWorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1

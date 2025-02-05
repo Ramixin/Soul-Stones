@@ -2,6 +2,7 @@ package net.ramixin.soulstones;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
+import net.ramixin.soulstones.blocks.ModBlocks;
 import net.ramixin.soulstones.entities.ModEntityTypes;
 import net.ramixin.soulstones.items.ModItems;
 import org.slf4j.Logger;

@@ -99,10 +99,15 @@ public class SoulFigureEntity extends LivingEntity {
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
-        UUID playerUUID = nbt.getUuid("playerUUID");
-        if(playerUUID != null) this.dataTracker.set(PLAYER_UUID, Optional.of(playerUUID));
-        String texture = nbt.getString("texture");
-        if(texture != null) this.dataTracker.set(TEXTURE, texture);
+        if(nbt.contains("playerUUID")) {
+            UUID playerUUID = nbt.getUuid("playerUUID");
+            if(playerUUID != null) this.dataTracker.set(PLAYER_UUID, Optional.of(playerUUID));
+        } else this.dataTracker.set(PLAYER_UUID, Optional.empty());
+
+        if(nbt.contains("texture")) {
+            String texture = nbt.getString("texture");
+            if(texture != null) this.dataTracker.set(TEXTURE, texture);
+        } else this.dataTracker.set(TEXTURE, "");
     }
 
     @Override
