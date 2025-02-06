@@ -4,6 +4,7 @@
   "package": "net.ramixin.soulstones.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ZombieEntityMixin",
     "LevelPropertiesMixin",
     "ServerWorldMixin"
   ],

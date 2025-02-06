@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerWorld.class)
-public class ServerWorldMixin {
+public abstract class ServerWorldMixin {
 
     @Inject(method = "close", at = @At("HEAD"))
     private void resetSoulStoneManagerOnServerWorldClose(CallbackInfo ci) {

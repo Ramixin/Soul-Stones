@@ -1,18 +1,17 @@
 package net.ramixin.soulstones.entities.soulfigure;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -20,6 +19,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.ramixin.soulstones.SoulStones;
 import net.ramixin.soulstones.entities.ModEntityTypes;
+import net.ramixin.soulstones.payloads.clientbound.SpawnSoulFigureParticlesS2CPayload;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -79,20 +79,11 @@ public class SoulFigureEntity extends LivingEntity {
     }
 
     @Override
-    public boolean handleAttack(Entity attacker) {
-        for(int i = 0; i < 10; ++i) {
-            double d = this.random.nextGaussian() * 0.1;
-            double e = this.random.nextGaussian() * 0.1;
-            double f = this.random.nextGaussian() * 0.1;
-            this.getWorld().addParticle(ParticleTypes.SOUL, this.getParticleX(1.0F) - d, this.getRandomBodyY() - e, this.getParticleZ(1.0F) - f, -d, -e, -f);
-        }
-        for(int i = 0; i < 32; i++) {
-            double x = getParticleX(this.getWidth() * 2);
-            double y = getRandomBodyY();
-            double z = getParticleZ(this.getWidth() * 2);
-            this.getWorld().addParticle(new BlockStateParticleEffect(ParticleTypes.BLOCK_CRUMBLE, Blocks.STONE.getDefaultState()), x, y, z, 0.0D, 0.0D, 0.0D);
-        }
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
         this.discard();
+        world.getPlayers().forEach(player -> {
+            if(world.isPlayerInRange(getX(), getY(), getZ(), 32)) ServerPlayNetworking.send(player, new SpawnSoulFigureParticlesS2CPayload(getBlockPos()));
+        });
         return true;
     }
 

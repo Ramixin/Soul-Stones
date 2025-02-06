@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LevelProperties.class)
-public class LevelPropertiesMixin {
+public abstract class LevelPropertiesMixin {
 
     @SuppressWarnings("deprecation")
     @Inject(method = "readProperties", at = @At("TAIL"))

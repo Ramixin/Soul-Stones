@@ -1,15 +1,18 @@
 package net.ramixin.soulstones;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import net.ramixin.soulstones.blocks.ModBlocks;
 import net.ramixin.soulstones.entities.soulfigure.SoulFigureEntity;
+import net.ramixin.soulstones.payloads.clientbound.DispatchersResponseS2CPayload;
 
 import java.util.*;
 
@@ -32,7 +35,10 @@ public class SoulStoneManager {
         Set<BlockPos> toRemove = new HashSet<>();
         for(BlockPos pos : dispatchers.keySet()) {
             BlockState state = world.getBlockState(pos);
-            if(state.getBlock() != ModBlocks.SOUL_STONE) toRemove.add(pos);
+            if(state.getBlock() != ModBlocks.SOUL_STONE) {
+                toRemove.add(pos);
+                SoulStones.LOGGER.info("removing dispatcher from world at {}", pos);
+            }
             else dispatchers.get(pos).update(world);
         }
         toRemove.forEach(SoulStoneManager::discardDispatcher);
@@ -47,14 +53,16 @@ public class SoulStoneManager {
         dispatchers.clear();
     }
 
-    public static HashMap<BlockPos, Optional<UUID>> gatherViableLocations(UUID playerUUID, World world) {
+    public static void gatherAndSendDispatchLocations(ServerPlayerEntity player, World world) {
         update(world);
-        HashMap<BlockPos, Optional<UUID>> gathered = new HashMap<>();
+        UUID playerUUID = player.getUuid();
+        HashMap<String, Optional<UUID>> gathered = new HashMap<>();
         for(BlockPos pos : dispatchers.keySet()) {
             SoulStoneDispatcher dispatcher = dispatchers.get(pos);
-            gathered.put(dispatcher.getPos(), dispatcher.getSuitableFigure(playerUUID));
+            gathered.put(dispatcher.getName(), Optional.ofNullable(dispatcher.getSuitableFigure(playerUUID).isPresent() ? dispatcher.getUuid() : null));
         }
-        return gathered;
+        DispatchersResponseS2CPayload payload = DispatchersResponseS2CPayload.build(gathered);
+        ServerPlayNetworking.send(player, payload);
     }
 
     public static void save(NbtCompound root) {
@@ -84,6 +92,7 @@ public class SoulStoneManager {
 
         private final BlockPos pos;
         private String name;
+        private final UUID uuid = UUID.randomUUID();
         private final Set<UUID> genericFigures = new HashSet<>();
         private final HashMap<UUID, UUID> assignedFigures = new HashMap<>();
 
@@ -117,6 +126,10 @@ public class SoulStoneManager {
 
         public BlockPos getPos() {
             return pos;
+        }
+
+        public UUID getUuid() {
+            return uuid;
         }
 
         private Optional<UUID> getSuitableFigure(UUID playerUUID) {
