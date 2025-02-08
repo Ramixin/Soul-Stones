@@ -73,11 +73,9 @@ public class SoulStoneManager {
             dispatchersList.add(dispatcherRoot);
         }
         root.put("dispatchers", dispatchersList);
-        SoulStones.LOGGER.info("saving: {}", root);
     }
 
     public static void load(NbtCompound root) {
-        SoulStones.LOGGER.info("loading: {}", root);
         if(!root.contains("dispatchers")) return;
         NbtList dispatchersList = root.getList("dispatchers", NbtElement.COMPOUND_TYPE);
         for(NbtElement dispatcherElement : dispatchersList) {

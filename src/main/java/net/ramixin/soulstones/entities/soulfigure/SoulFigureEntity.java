@@ -1,8 +1,10 @@
 package net.ramixin.soulstones.entities.soulfigure;
 
+import com.mojang.authlib.properties.PropertyMap;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -12,13 +14,15 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.ramixin.soulstones.SoulStones;
-import net.ramixin.soulstones.entities.ModEntityTypes;
+import net.ramixin.soulstones.items.ModItems;
 import net.ramixin.soulstones.payloads.clientbound.SpawnSoulFigureParticlesS2CPayload;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,22 +40,14 @@ public class SoulFigureEntity extends LivingEntity {
         super(entityType, world);
     }
 
-    public SoulFigureEntity(World world, PlayerEntity player) {
-        this(ModEntityTypes.SOUL_FIGURE, world);
-        position(player);
-    }
-
     public void assignToPlayer(@NotNull PlayerEntity player) {
+        PropertyMap properties = player.getGameProfile().getProperties();
         dataTracker.set(PLAYER_UUID, Optional.of(player.getUuid()));
-
-        dataTracker.set(TEXTURE, player.getGameProfile().getProperties().get("textures").iterator().next().value());
-    }
-
-    public void position(PlayerEntity player) {
-//        this.prevHeadYaw = player.getYaw();
-//        this.headYaw = player.getYaw();
-        this.prevPitch = player.getPitch();
-        this.setPitch(player.getPitch()+180);
+        if(!properties.containsKey("textures")) {
+            SoulStones.LOGGER.error("failed to apply texture due to {} not having a skin", player.getName().getString());
+            return;
+        }
+        dataTracker.set(TEXTURE, properties.get("textures").iterator().next().value());
     }
 
     @Override
@@ -81,9 +77,15 @@ public class SoulFigureEntity extends LivingEntity {
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         this.discard();
-        world.getPlayers().forEach(player -> {
-            if(world.isPlayerInRange(getX(), getY(), getZ(), 32)) ServerPlayNetworking.send(player, new SpawnSoulFigureParticlesS2CPayload(getBlockPos()));
-        });
+        if(this.dataTracker.get(PLAYER_UUID).isEmpty() && source.getAttacker() instanceof PlayerEntity)
+            world.spawnEntity(new ItemEntity(world, getX(), getY()+1, getZ(), ModItems.SOUL_STATUE.getDefaultStack()));
+        else {
+            world.playSound(null, getX(), getY(), getZ(), SoundEvents.BLOCK_SOUL_SAND_BREAK, SoundCategory.PLAYERS);
+            world.playSound(null, getX(), getY(), getZ(), SoundEvents.BLOCK_DECORATED_POT_BREAK, SoundCategory.PLAYERS);
+            world.getPlayers().forEach(player -> {
+                if(world.isPlayerInRange(getX(), getY(), getZ(), 32)) ServerPlayNetworking.send(player, new SpawnSoulFigureParticlesS2CPayload(getBlockPos()));
+            });
+        }
         return true;
     }
 
